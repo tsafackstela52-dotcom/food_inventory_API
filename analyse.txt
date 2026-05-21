@@ -1,0 +1,23 @@
+ Analyse Critique - Devoir Node.js
+1. Pourquoi utilise-t-on path.join(__dirname, 'inventory.json') plutôt que './inventory.json' ?
+Si on utilise `./inventory.json`, Node.js cherche le fichier par rapport à l'endroit où on se trouve dans le terminal quand on lance le serveur. Si on change de dossier dans le terminal, Node.js ne trouve plus le fichier et l'application plante.
+
+En utilisant `__dirname`, on donne le chemin complet et exact du dossier où se trouve le script caché dans l'ordinateur. Le module `path` permet de coller les morceaux de chemin correctement, que l'on soit sur Windows, Mac ou Linux. Grâce à ça, le code fonctionne à tous les coups, peu importe d'où on le lance.
+
+
+2. Qu'est-ce que module.exports ? Pourquoi les fonctions non exportées restent-elles privées ?
+Dans Node.js, chaque fichier est comme une boîte fermée. Les autres fichiers ne peuvent pas voir ce qu'il y a dedans par défaut.
+
+`module.exports` est une petite porte que l'on ouvre. C'est un objet dans lequel on met les fonctions ou les variables que l'on veut prêter aux autres fichiers (avec `require`).
+ Les fonctions qui ne sont pas mises dans `module.exports` restent enfermées en sécurité dans le fichier. Elles sont "privées" parce qu'aucun autre fichier ne peut y toucher, ce qui évite de casser le code par erreur.
+
+
+### 3. En regardant votre code de POST /items, combien d'opérations asynchrones enchaînées avez-vous dû gérer ? Quelle est la difficulté principale ?
+Pour la route `POST /items`, nous avons dû enchaîner **2 grandes étapes de code asynchrone** (qui prennent du temps et utilisent des fonctions de rappel ou *callbacks*) :
+1. **Étape 1 :** Lire le fichier (`fs.readFile`) pour voir la liste des produits déjà existants.
+2. **Étape 2 :** Écrire le fichier (`fs.writeFile`) juste après, pour enregistrer la liste avec le nouveau produit qu'on vient d'ajouter.
+
+#### Quelle est la difficulté principale ?
+La difficulté principale est la structure du code (souvent appelée *"Callback Hell"* ou la pyramide du code). Comme il faut attendre que la lecture soit finie pour commencer l'écriture, les fonctions s'emboîtent les unes dans les autres et le code se décale vers la droite. 
+
+De plus, si une seule étape rencontre un problème (par exemple si le fichier est introuvable ou si le texte reçu est mal écrit), le serveur peut s'arrêter d'un coup. Il faut donc vérifier et gérer manuellement les erreurs à chaque étape pour que le serveur reste toujours allumé.
